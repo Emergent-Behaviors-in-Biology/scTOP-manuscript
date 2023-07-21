@@ -1,0 +1,390 @@
+\documentclass[vruler,JEB]{COB}%%%%where COB is the template name
+
+% \usepackage[nomarkers,figuresonly]{endfloat}
+\usepackage{hyperref}
+% \usepackage{amsmath}
+% \usepackage{physics}
+\bibliographystyle{plainnat}
+% \usepackage[pdftex]{graphicx}
+% \usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    citecolor=blue,
+    filecolor=black,
+    linkcolor=red,
+    urlcolor=blue
+}
+\usepackage{xr}
+\newcommand{\comment}[1]{{\color{blue}#1}}
+\newcommand{\edit}[1]{{\color{purple}#1}}
+\newcommand{\del}[1]{{\color{red}\st{#1}}}
+\newcommand{\beginsupplement}{%
+        \setcounter{table}{0}
+        \renewcommand{\thetable}{S\arabic{table}}%
+        \setcounter{figure}{0}
+        \renewcommand{\thefigure}{S\arabic{figure}}%
+     }
+
+\makeatletter
+\newcommand*{\addFileDependency}[1]{% argument=file name and extension
+\typeout{(#1)}% latexmk will find this if $recorder=0
+% however, in that case, it will ignore #1 if it is a .aux or 
+% .pdf file etc and it exists! If it doesn't exist, it will appear 
+% in the list of dependents regardless)
+%
+% Write the following if you want it to appear in \listfiles 
+% --- although not really necessary and latexmk doesn't use this
+%
+\@addtofilelist{#1}
+%
+% latexmk will find this message if #1 doesn't exist (yet)
+\IfFileExists{#1}{}{\typeout{No file #1.}}
+}\makeatother
+
+\newcommand*{\myexternaldocument}[1]{%
+\externaldocument{#1}%
+\addFileDependency{#1.tex}%
+\addFileDependency{#1.aux}%
+}
+
+\myexternaldocument{SI}
+
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\definecolor{pastel_green}{rgb}{0.18,0.65,0.34}
+\newcommand{\CHW}[1]{\textcolor{pastel_green}{#1}}
+%% OPTIONAL MACRO DEFINITIONS
+\def\s{\sigma}
+
+
+\def \M{\mathcal{M}}  
+\def \P{\mathrm{P}}
+\def \E{\mathbb{E}}
+
+
+\def \mcl{\mathcal}
+\def \mbb{\mathbb}
+\def \mbf{\mathbf}
+
+
+
+\def\bd{\boldsymbol}
+\def\sm{\setminus}
+\def\tb{\textbf}
+
+\def\CH{\cal{H}} 
+
+\def\<{\langle}
+\def\>{\rangle}
+
+\def\thet{{\theta}^{(t)}}
+\def\thetp{{\theta}^{(t+1)}}
+\def\thets{{\theta}^{(t)\star}}
+
+
+\def\be{\begin{equation}} 
+\def\ee{\end{equation}}
+\newcommand \bea {\begin{eqnarray}} 
+\newcommand \eea {\end{eqnarray}} 
+\newcommand \sign {\hbox{sign}} 
+\newcommand{\nn} {\nonumber}
+\newcommand{\mbbE} {\mathbb{E}}
+\usepackage{widetext-TI}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{condition}{Condition}
+
+%The author can find the documentation of the above style file and any additional
+%supporting files if required from "http://www.ctan.org"
+
+% *** Do not adjust lengths that control margins, column widths, etc. ***
+
+\begin{document}
+
+
+
+\supertitle{Research Article}
+
+\title{scTOP: physics-inspired order parameters for cellular identification and visualization}
+
+\author{Maria Yampolskaya$^{1}$, Michael J Herriges$^{2, 3}$, Laertis Ikonomou$^{4, 5}$, Darrell N Kotton$^{2, 3}$, and Pankaj Mehta$^{1, 2, 6, 7}$}
+
+\address{\add{1}{Department of Physics, Boston University, Boston, MA 02215, USA}
+\add{2}{Center for Regenerative Medicine of Boston University and Boston Medical Center, Boston, MA, USA}
+\add{3}{The Pulmonary Center and Department of Medicine, Boston University School of Medicine, Boston, MA, USA}
+\add{4}{Department of Oral Biology. University at Buffalo, The State University of New York, Buffalo, NY, USA}
+\add{5}{Division of Pulmonary, Critical Care and Sleep Medicine, Department of Medicine, University at Buffalo, The State University of New York, Buffalo, NY, USA}
+\add{6}{Faculty of Computing and Data Science, Boston University, Boston, MA 02215, USA}
+\add{7}{Biological Design Center, Boston University, Boston, MA 02215, USA}}
+
+
+\corres{(\email{mariay@bu.edu}; \email{pankajm@bu.edu})}
+
+\maketitle
+
+\begin{abstract}
+Advances in single-cell RNA-sequencing (scRNA-seq) provide an unprecedented window into cellular identity. The abundance of data requires new theoretical and computational frameworks to analyze the dynamics of differentiation and integrate knowledge from cell atlases. We present single-cell Type Order Parameters (scTOP): a statistical-physics-inspired approach for quantifying cell identity given a reference basis of cell types. scTOP can accurately classify cells, visualize developmental trajectories, and assess the fidelity of engineered cells. Importantly, scTOP does this without feature selection, statistical fitting, or dimensional reduction (e.g., UMAP, PCA, etc.). We illustrate the power of scTOP using human and mouse datasets. By reanalyzing mouse lung data, we characterize a transient hybrid alveolar type 1/alveolar type 2 cell population. Visualizations of lineage tracing hematopoiesis data using scTOP confirm that a single clone can give rise to multiple mature cell types. We assess the transcriptional similarity between endogenous and donor-derived cells in the context of murine pulmonary cell transplantation. Our results suggest physics-inspired order parameters can be an important tool for understanding differentiation and characterizing engineered cells. scTOP is available as an easy-to-use Python package.
+\end{abstract}
+
+\keywords{Cell types, Differentiation, Developmental trajectory, Single-cell RNA-sequencing, Computational method}
+
+\section{Summary statement}
+A computational method was developed to quantify cell identity and visualize the dynamics of differentiation. Concepts from statistical physics provide meaningful coordinates for comparing single-cell RNA-sequencing data across experiments.
+
+\section{Introduction}
+Humans and other animals have many specialized cells that arise through a complex developmental process  \citep{zeng_what_2022}. At the blastocyst/epiblast stages of embroynic development, cells are pluripotent and possess the flexibility to develop into fates from all three germ layers \citep{Wolpert_2019}. However, as embryos mature, cellular identity becomes less plastic and more specified through a complex spatiotemporal process involving signaling and other environmental cues. The questions of how and why cells end up in one fate or another are fundamental to developmental biology \citep{stephenson_intercellular_2012, zhu2020principles, rand2021geometry}. More practically, understanding the process of cell fate specification is crucial for developing directed differentiation protocols for engineering cells \emph{in vitro}, with important clinical applications for human health and disease \citep{rossant_impact_2011, rowe2019induced, basil2020cellular}.
+
+One powerful set of techniques for characterizing cellular phenotype is transcriptome-wide measurement using single-cell RNA sequencing (scRNA-seq). Typical scRNA-seq experiments involve thousands of genes and dozens to millions of cells. For this reason, this data is intrinsically high-dimensional and requires specialized computational tools for analysis and interpretation \citep{zhu2020principles, setty2019characterization, schiebinger2019optimal}. This task is especially difficult because the technical challenges of sequencing RNA from individual cells result in data that is noisy and sparse \citep{hicks2018missing, lahnemann_eleven_2020, argelaguet2021computational}. Genes with relatively low expression are often recorded as not being expressed at all, resulting in zero counts called dropouts. Experiment-to-experiment differences in sequencing methods, platforms, and other difficult-to-standardize conditions result in technical variations in scRNA-seq measurements called batch effects. These challenges merit careful consideration of how to normalize and analyze the data in a way that permits the study of biological variation without conflation by technical variation.
+
+scRNA-seq is often used for cellular identification. The most frequently used workflow involves applying dimensional reduction (such as Uniform Manifold Approximation and Projection (UMAP) \citep{mcinnes_umap_2018} or SPRING \citep{weinreb_spring_2018}) to visualize the data in two dimensions, then using unsupervised clustering to group individual cells. These groups are then often manually annotated according to expression levels of known marker genes. Machine learning classifiers such as support vector machines are also commonly used to identify cells after training with labeled data \citep{abdelaal_comparison_2019}. Another common analysis task is trajectory inference, where the goal is to infer developmental trajectories from static time shots (reviewed in \citep{saelens2019comparison,wagner2020lineage}). Trajectory inference arranges cells on a low-dimensional manifold and assigns pseudo-times according to transcriptomic similarity. There are also methods such as partition-based graph abstraction \citep{wolf_paga_2019} that purport to combine clustering and trajectory inference to simultaneously calculate pseudo-times and provide discrete labels at varying resolutions. RNA-velocity-based methods like Dynamo \citep{qiu2022mapping} use splicing information or time-resolved data to predict paths of differentiation from RNA data.
+
+Despite the power and utility of these computational tools, most commonly employed methods for analyzing scRNA-seq data share certain limitations. Dimensional reduction is often one of the first steps in visualizing scRNA-seq data, but current methods highly distort cell-to-cell and cluster-to-cluster quantitative relationships \citep{chari_specious_2021}. Distorted embeddings inconsistently represent distances between individual data points and between cell types, making it difficult to interpret cell fate transitions. Similar issues arise in trajectory inference and RNA-velocity methods because local neighborhoods can also vary substantially with the choice of embedding. Another limitation of these methods is the lack of reproducibility inherent to methods like t-SNE and UMAP, which output different results on separate executions even when hyperparameters remain the same \citep{wattenberg_how_2016}. Many algorithms also perform feature selection (e.g., limiting their analysis to the most variable genes or highly-expressed genes) or require choosing parameters such as perplexity, making results even more sensitive to the inclusion or exclusion of different datasets in the analysis. 
+
+
+An ideal analysis algorithm for scRNA-seq data should possess certain desirable properties. First, the algorithm should incorporate explicit assumptions that can be kept consistent between analyses. Second, the results of the algorithm should be reproducible, so that direct comparison between data sets is possible. Third, the axes in visualization should be interpretable, intuitive, and remain fixed across analysis and datasets. Fourth, the algorithm should assign a continuous value to cell identity instead of assigning discrete identity labels, thus enabling a more subtle and fine-grained analysis of cellular identity and developmental trajectories that reflect the continuous nature of biology. Finally, the algorithm should be easily able to incorporate datasets from multiple data sources, including the wealth of new single-cell atlases now being generated \citep{quake2022decade}.
+
+Here, we present a new physics-inspired algorithm, single-cell Type Order Parameters (scTOP), that has all of these desired properties. The algorithm is based on the statistical physics concept of an order parameter -- a coarse-grained quantity that can distinguish between phases of matter. An order parameter takes on different values depending on the phase of the system. Typically, in a disordered phase, the corresponding order parameter is zero, and in an ordered phase it is nonzero. Arguably the most famous example of an order parameter is magnetization in a ferromagnetic system, which is a collection of spins (in the simplest case, spins can be ``up'' or ``down'') which align with one another. In a ferromagnet, the magnetization measures the alignment of spins and can be used to distinguish magnetic and paramagnetic phases \citep{landau2013statistical,sethna2021statistical}. Below a particular temperature (known as the ``critical temperature''), the spins in the ferromagnet align with one another. In a simple model, the order parameter (magnetization, which measures the average spin) is approximately one if all the spins are up and approximately negative one if all the spins are down. When the temperature exceeds the critical temperature, the system changes from the magnetic phase to the paramagnetic phase, and the spins do not align; instead, they are randomly up or down, and the order parameter is approximately zero.
+
+It is straightforward to generalize the idea of magnetization to more complex settings such as spin glasses and attractor neural networks \citep{amit1985spin}. In epigenetic landscape models of cell identity based on attractor networks, this takes the form of generalized magnetizations that measure how aligned a gene expression state is with each of the attractor basins for different cell fates \citep{lang_epigenetic_2014,pusuluri_cellular_2017}. Whereas magnetization for the ferromagnetic system measures whether the system is in a magnetic or paramagnetic phase, these generalized magnetizations measure which phase a gene regulatory network is in (where the different phases correspond to different cell types). These generalized magnetizations serve as natural order parameters for cellular identity and can be calculated directly from data \citep{lang_epigenetic_2014,pusuluri_cellular_2017, dame_thyroid_2017,ikonomou_vivo_2020}. The scTOP algorithm builds on previous work by developing methods for integrating scRNA-seq data, greatly expanding the power and utility of this approach. See Supplementary Information section \ref{interpretation} for a further discussion on interpreting score values.
+ 
+The inputs to scTOP are the scRNA-seq measurements of query data as well as a reference basis containing the archetypal gene expression profiles for cell types of interest. The outputs of scTOP are the coordinates of the query data in cell type order parameter space (i.e., generalized magnetizations), with each output dimension serving as a measure of similarity between the query data and a distinct cell type in the reference basis. In this way, scTOP naturally projects gene expression deterministically onto a space with dimension equal to the number of cell types in the reference basis. These generalized coordinates can be used for both cell type identification and visualization. One appealing feature of scTOP is that the assumptions of the algorithm are explicit and are contained entirely in the choice of reference basis. This allows direct comparison across data sets and settings since the coordinates of and distances between data points do not change as long as one uses the same reference basis. One important limitation of scTOP worth noting is that it cannot be easily used to identify novel cell fates. The underlying reason for this is that scTOP assumes one already knows what cell types are of interest in the form of a reference basis and, for this reason, is less suited for exploratory work with undocumented cell types. 
+
+In this paper, we show that scTOP can be used to reliably assess cell identity and accurately classify cell type with high accuracy at the resolution of individual cells. We demonstrate this using mouse and human samples from lungs, brains, and other organs, including transplanted cells that were generated through the directed differentiation of pluripotent stem cells (PSCs). By analyzing lineage tracing data and embryonic development data, we also establish scTOP's capacity to quantify transitions between cell types, including bifurcations between closely related cell fates. We also show that scTOP can be used to quantitatively assess transcriptional similarity of engineered and natural cells by analyzing murine pulmonary transplantation experiments.
+
+We have implemented scTOP in an easy-to-use Python package, available on the \href{https://pypi.org/project/scTOP/}{Python Package Index} and \href{https://github.com/Emergent-Behaviors-in-Biology/scTOP}{Github}. The code for the analyses in this paper is available in a separate \href{https://github.com/Emergent-Behaviors-in-Biology/scTOP-manuscript}{Github repository}.
+
+\section{Results}
+\subsection{Benchmarking and validation: Classification of cell fate}
+
+scTOP scores can be used to reliably and accurately predict cell identity. To show this, we applied the algorithm to several scRNA-seq datasets across species and laboratories. scTOP is organism-agnostic as long as an appropriate reference basis is used. Mice and humans are among the most common subjects of scRNA-seq measurements, and we restrict our analysis in this manuscript to data from these organisms. We make use of single-cell atlases such as the Mouse Cell Atlas \citep{han2018mapping} and the Atlas of Lung Development \citep{negretti_single-cell_2021}.
+
+Table \ref{table:1} lists each of the datasets examined in this paper with their respective scTOP score accuracies. For cases where the training (or ``reference'') data source is the same as the test data source, we set aside a randomly-selected subset of cells for the training set and do not use them in the test data. TopN refers to the percent of cells whose true cell types were in the top N scTOP scores, with a score greater than 0.1. Unspecified refers to the percent of cells for which the highest scTOP score was less than 0.1; this represents a failure of the algorithm to confidently identify the cell. The accuracies across species and tissues are high, and the unspecified percentages are very low, even in datasets exceeding a million cells.
+
+\begin{table*}[h!]
+\centering
+\begin{tabular}{| c | c | c | c | c | c | c |}
+\hline
+Test data source & Species & Reference data source & Top1 (percent) & Top3 (percent) & Unspecified (percent) & Total cells \\ 
+\hline
+Kotton lab & Mouse & Mouse Cell Atlas & 97.19 & 99.77 & 2.69 & 4,805 \\ 
+\hline
+Brain atlas & Mouse & Self & 86.28 & 96.89 & 1.78 & 1,161,041 \\
+\hline
+CellBench & Human & Self & 100 & 100 & 0 & 2,822 \\
+\hline
+Lung atlas & Human & Self & 79.78 & 85.16 & 3.32 & 2,952 \\  
+\hline
+\hline
+Data set & Species & Reference Basis & Top1 (percent) & Top3 (percent) & Unspecified (percent) & Number of cell types \\
+\hline
+Mouse Cell Atlas & Mouse & Tabula Muris & 79.17 & 87.5 & 0 & 48 \\
+\hline
+
+\end{tabular}
+\caption{Accuracy scores of included sample types for each of the described data sets.}
+\label{table:1}
+\end{table*}
+
+scTOP performs comparably to state-of-the-art methods for cell identification. \cite{abdelaal_comparison_2019} compared the performance of automatic cell identification algorithms for various datasets, including the CellBench dataset and an older version of the Allen Mouse Brain atlas. They found that the median F1-score for the CellBench dataset ranged from 0.9 to 1; scTOP has a median F1-score of 1 for the same data. The version of the Allen Mouse Brain atlas they analyzed contained three levels of cell population annotations, with 3, 16, and 92 populations for each annotation level. The median F1-score ranged from 0.64 to 1 for the 16-population case and 0 to 0.98 for the 92-population case. The version of the brain atlas we analyzed contained 40 populations, and scTOP had a median F1-score of 0.88 for this dataset. 
+
+\subsubsection{Example 1: Lung lineages}
+To demonstrate the efficacy of scTOP in the case where the reference basis and query data come from different sources, we projected mouse lung data from \cite{herriges_durable_2022} onto the mouse cell atlas. The Herriges et al. dataset measures gene expression levels of six different specialized lung types from healthy mice: AT1, AT2, basal, ciliated, secretory, and neuroendocrine (See figure \ref{herriges} (a)). The reference basis used to find the individual scTOP scores for this data set was derived from the Mouse Cell Atlas. Even though the Herriges et al. dataset and the Mouse Cell Atlas were created in different laboratories using different sequencing methods, the resulting scTOP scores distinctly separate the Herriges et al. dataset into the expected cell types. Furthermore, the individual scTOP scores strongly correlate with the expression of lineage marker sets (figure \ref{herriges} (b)).  Altogether this suggests that scTOP provides a reliable method to annotate scRNA-seq datasets without the need for the expertise required to generate lineage marker gene sets.
+
+\subsubsection{Example 2: Mouse Brain Atlas}
+
+The mouse brain atlas \citep{yao_taxonomy_2021} sequenced over one million cells and clustered them into 42 subclasses and 101 supertypes. For a reference basis, we reserved a subset of 200 cells from each of the identified subclasses to use as training data. The test data, from which the accuracy score was calculated, was the remaining cells of each type not included in the training data. Ten different cell types are visualized in a grid in figure \ref{mouse_brain} (a). The color of each grid square corresponds to the average scTOP score of cells annotated as the type on the y-axis, with the cell type corresponding to the scTOP dimension on the x-axis. As shown by the distinct blue diagonal, the average scTOP score correctly matches the corresponding annotated cell type. This demonstrates that scTOP is able to distinguish cell fates even from closely related neural lineages.
+
+\subsubsection{Example 3: Matching cell types to tissues}
+
+scTOP can also be used to match cells with tissues/organs. We illustrate this by comparing cells from the Mouse Cell Atlas with a reference basis consisting of Tabula Muris organs \citep{schaum_single-cell_2018}. To do so, we averaged RNA counts across cell populations from the Mouse Cell Atlas, then preprocessed the averaged data and calculated scTOP scores. These aggregate pseudo-bulk scores tend to be higher than individual cell scores because averaging over many cells compensates for the dropout effect. As shown in figure \ref{heatmaps} (a), we found the aggregate scTOP scores for cells from the Mouse Cell Atlas were correctly and strongly identified with the annotated tissue of origin in the Tabula Muris atlas. Parenchymal cell types were the most associated with the correct organ, while stromal cells were sometimes misidentified -- for example, the mammary gland endothelial cells. This suggests that stromal cells are less specified to each organ. A discussion of the accuracy of scTOP, when applied to stromal types versus parenchymal types, may be found in Supplementary Information \ref{failure_cases}.
+
+\subsubsection{Example 4:  Human data}
+
+The CellBench dataset \citep{tian_benchmarking_2019} was designed specifically to benchmark scRNA-seq analysis methods. We used the subset of data pertaining to five cancer lines. 200 cells from each line were used as training data to create the reference basis, then the rest of the cells were input as query data. As shown in figure \ref{heatmaps} (b) and table \ref{table:1}, scTOP classifies the cell line identity of the test data with 100 percent accuracy.
+
+To illustrate the power of scTOP for classifying human samples, we analyzed data from the human lung atlas dataset \citep{travaglini_molecular_2020}. This dataset sequenced thousands of human lung cells and identified 58 phenotypic populations. For our analysis, we restricted the training and test data to epithelial and stromal types that had at least 200 cells in each type population. The reference basis was created using 80\% of the cells from each population, and the query data consisted of the remaining 20\% of the data. Figure \ref{heatmaps}(c) shows that the scTOP scores were consistently high in cases where the score type matched the true type of the query.
+
+As demonstrated by the diverse data sources examined here, as long as a well-defined reference basis is available, scTOP works extremely well for cell type identification across different measurement conditions, species, organs, and resolutions. This performance is especially impressive since, as discussed earlier, the algorithm does not use any statistical fitting procedures or dimensional reduction methods such as PCA, tSNE, UMAP, or SPRING.
+
+\subsection{Visualizing cell fate dynamics using scTOP }
+Having demonstrated the robust ability of scTOP to identify stable cell types, we next demonstrate how scTOP can be used in combination with scRNA-seq time series to visualize transient cell states in dynamic processes like development and differentiation. 
+
+\subsubsection{Lung development}
+The alveolar epithelium of the lung undergoes dramatic maturation and morphological changes during embryonic and perinatal development, ultimately giving rise to AT1 cells and AT2 cells. To investigate this process with scTOP, we reanalyzed alveolar epithelial cells from a recent dataset by \cite{zepp2021genomic}, which includes seven time points between embryonic day 12.5 (E12.5) and postnatal day 42 (P42). These cells were then compared against a reference basis developed from adult cell types in the Mouse Cell Atlas and an E12.5 epithelial progenitor cell type from the Atlas of Lung Development  \citep{negretti_single-cell_2021}.
+
+The resulting AT1 and AT2 scTOP scores were plotted to visualize maturation into these two lineages (Figure \ref{LungMAP}). As expected, early embryonic progenitor cells (E12.5, E15.5), which express few of the mature lineage markers, align poorly with both lineages. In contrast, the E17.5 alveolar epithelial cells fall along a wide spectrum with cells aligning to AT1 cells, AT2 cells, or both lineages. In the postnatal time points, this continuous spectrum gives way to more distinct clusters, eventually resolving into AT2 and AT1 cell clusters at P42. Similar to our analysis of adult mouse lungs (Figure \ref{herriges}), the scTOP scores changes over the course of development correlate well with our lineage marker gene sets.
+
+In addition to the expected postnatal AT2 and AT1 cell clusters, this scTOP analysis illustrated a transient AT2/AT1 hybrid population that persisted through P7. The existence of these hybrid AT2/AT1 cells was already noticed in Zepp et al. using a combination of graph-based clustering and gene enrichment profiling (see Figure 1C, I in \cite{zepp2021genomic}). The authors conjectured that these AT2/AT1 cells were a transitional state of AT2 similar to Spock2+/Axin2+ AT2 cells previously identified in adult lungs \citep{frank2016emergence}. To assess whether this was the case, we displayed Axin2 expression on our scTOP plots (Supplementary Figure \ref{LungMAP genes}(a)). These cells do not have significant upregulation of Axin2 relative to perinatal or adult AT2 cells, suggesting that the postnatal hybrid AT2/AT1 cells are distinct from adult Spock2+/Axin2+ AT2 cells \citep{frank2016emergence}.
+
+We then performed a similar analysis of markers for other published postnatal hybrid AT1/AT2 or transitional alveolar cell states, including alveolar differentiation intermediate (ADI, {\it Krt8} and {\it Trp53}), pre-alveolar type-1 transitional cell state (PATS, {\it Cldn4} and {\it Krt19}), and damage-associated transient progenitors (DATPs, {\it Ilr1} and {\it Hif1a}) \citep{verheyden2020transitional, strunz2020alveolar, kobayashi2020persistence, choi2020inflammatory}. In each case, markers were not uniquely upregulated in the perinatal hybrid AT1/AT2 cells relative to either the perinatal or adult committed lineages (Supplementary Figure \ref{LungMAP genes} (b) - (d)). Furthermore, differential gene expression analysis failed to identify any genes that were uniquely differentially expressed in the hybrid AT1/AT2 cells relative to either timepoint-matched AT1 or AT2 cells. These results suggest that this population is most likely transcriptionally distinct from previously identified adult AT2-transitional cell types. 
+
+\subsubsection{scTOP for hematopoiesis using lineage tracing data}
+
+In the previous section, we used scTOP to visualize differentiation into two closely related lung epithelial cell fates. In this section, we show how scTOP can also be used to gain insights into more complicated developmental processes such as hematopoiesis, in which hematopoietic stem cells (HSCs) give rise to multiple differentiated blood cell types. To do so, we make use of the unique dataset by \cite{weinreb_lineage_2020} on hematopoiesis in mice using a new technique, lineage and RNA recovery (LARRY), that combines scRNA-seq and lineage tracing data. LARRY uses heritable barcodes that can be detected using scRNA sequencing, allowing for the tracking of clone families during differentiation. Here, we focus on visualizing the ex-vivo experiments from Weinreb et al., where cells were sequenced at a sufficient depth to infer lineage relationships. In these experiments, HSCs were extracted from mice, barcoded, and allowed to expand in primary culture. scRNA-seq measurements were performed on days 2, 4, and 6 post-barcoding. The cells were then annotated using marker genes into 9 differentiated blood cell fates. 
+
+We restrict our analysis to a subset of these annotated cell types with at least 150 cells. We also excluded cells labeled as erythroids from our analysis since we found that this population was highly heterogeneous and gave rise to poor projections (likely due to the fact it was annotated using a single marker gene, \textit{Hbb-bs} \citep{weinreb_lineage_2020}, which did not sufficiently define a distinct population). Furthermore, we treated all day 2 undifferentiated cells as a single population we called progenitors. This resulted in a reference basis consisting of seven cell types: undifferentiated progenitors, neutrophils, monocytes, megakaryocytes, mast cells, eosinophils, and basophils. To construct the basis, we averaged the RNA counts for 150 random cells of each of these types, only including cells if they had no sister clones. Then we preprocessed the averaged gene expression profiles and inserted them into the reference basis.
+
+Figure \ref{hem clones} shows the differentiation dynamics of three different clonal families using scTOP. The histograms show the distribution of scTOP projection scores on each cell type for days 2, 4, and 6 post-barcoding, while the scatter plots show two-dimensional cross-sections of scTOP projection scores as a function of time for the indicated cell types. In all the plots, the scTOP projections for the undifferentiated hematopoietic progenitor stem cell decreased over time, with a high projection on day 2 and a low projection on day 6, while the scores for the mature types increased in time. 
+
+Interestingly, the three clones show very different behaviors as they mature. Figure \ref{hem clones} (a) shows a clone where a single barcode detected at day 2 gives rise to multiple cells in the neutrophil lineage. This can be seen in the plots by noting that the day 6 cells have near zero scores on both progenitor cells and other differentiated lineages, such as monocytes, but project significantly on the neutrophils. Figure \ref{hem clones} (b) shows a barcode that was detected in three cells on day 2 that gives rise to a mix of neutrophils and monocytes on day 6. Interestingly, the day 4 cells move in the direction of both of these lineages before bifurcating at day 6. This data is consistent with Weinreb et al., who previously highlighted the existence of such a bipotent neutrophil-monocyte progenitor population. We also find evidence that progenitor cells can even give rise to three distinct cellular populations. Figure \ref{hem clones} (c) shows a single barcode found on day 2 that results in day 6 cells with three distinct populations with non-zero scores on basophils, eosinophils, and neutrophils, suggesting a single clone can bifurcate into three different types of differentiated cell types.
+
+Figure \ref{hem clones} focuses on scTOP scores for individual clonal families, while Figure \ref{hem progenitor} shows the scTOP projection scores across all 1,816 multi-generational clonal families in the dataset. In each subplot, the horizontal axes show progenitor scores, and the vertical axes correspond to the six differentiated cell types included in the reference basis. Each bin of the 2-dimensional histogram is colored according to the {\it average} day of all the cells that fall within that bin. For this reason, although the cells were only sampled on days 2, 4, and 6, the color bar is continuous, with a range between 2 and 6 days. The histograms show that, as expected, the day 2 cells generally have high projections on progenitor cells, but as time passes, progenitor scores decrease while the scores on differentiated cell types either increase (indicating cells that differentiate into the cell type on the y-axis) or remain close to zero (indicating cells that differentiate into a different cell type than that on the y-axis). Somewhat surprisingly, the plots for different cell types look qualitatively different from each other (for example, compare the plots for megakaryocytes and monocytes). 
+
+To try to better understand this, we made additional 2-dimensional histograms comparing scTOP scores between all differentiated cell types in our basis (see Figure \ref{hem mature}). What is striking about these plots is that they show two qualitatively different behaviors depending on which pairs of cells are being compared: the differentiation pathways for some pairs are mutually exclusive, while other pairs show a more graded behavior. For example, the histogram for megakaryocytes and monocytes exhibits a distinct L-shape, indicating that these developmental programs are mutually exclusive since cells never have significant projection scores of both cell types simultaneously. This is in stark contrast with the histogram for monocytes and neutrophils, where there exists a continuous spectrum of cells that are monocyte-like, neutrophil-like, and every step in between. 
+
+Our scTOP-based visualizations of developmental decisions during hematopoiesis complement the analysis in \cite{weinreb_lineage_2020} using pseudo-time. Like in the original paper, we find strong evidence for the existence of progenitor cells that can give rise to multiple lineages (Figure \ref{hem clones}), including a neutrophil/monocyte bivalent progenitor and possibly a basophil/eosinophil/neutrophils trivalent progenitor.  The existence of these multi-potent progenitors seems to give rise to graded developmental dynamics where intermediate cells have significant projections on multiple cell types. This is in stark contrast with developmental decisions between other cell lineages (megakaryocytes vs. monocytes, basophils vs. megakaryocytes, monocytes vs. basophils) that seem to be mutually exclusive. One compelling feature of these visualizations using scTOP is that they require no statistical fitting, dimensional reduction, or ordering of cells. Once we have chosen the relevant reference basis (in this case, progenitors and six differentiated lineages), the resulting plots give an interpretable way of assessing complex developmental dynamics.
+
+\subsection{Using scTOP to compare endogenous and transplanted cells}
+
+Recent advancements in cell culture and cell transplantation techniques have allowed researchers to generate cells that were maintained or differentiated in vitro to approximate and eventually replace endogenous cells generated during in vivo development. However, even with scRNA-seq, it is difficult to consistently quantify the transcriptomic similarity between donor-derived and endogenous lineages from transplant recipients. Since it provides a quantitative measure of cell type similarity, scTOP can be useful for comparing cell populations. A relevant example can be found in pulmonary cell replacement therapy, where one goal is to differentiate or maintain alveolar cells in vitro and then transplant them into injured lungs. 
+
+To compare two distinct pulmonary cell transplant protocols, we used scTOP to analyze the results of scRNA-seq from two recent publications featuring murine pulmonary cell transplantation \citep{herriges_durable_2022, louie_progenitor_2022}. In Louie et al., adult mouse AT2 cells were maintained in culture with support cells for 3 weeks to generate a donor cell population. In contrast, in Herriges et al. the authors developed a protocol for directed differentiation of mouse PSCs into lung distal tip-like cells, which mimic an embryonic progenitor of AT2 cells. In both papers, the donor cells were transplanted into injured mouse lungs, where they survived and gave rise to multiple cell lineages, including AT2-like cells.
+
+To highlight the usefulness of scTOP, we first consider another dimensional reduction method. Dimensional reduction methods like UMAP and t-SNE are often used to compare similar cells from different sources, such as transplanted and endogenous cells. Figure \ref{engineered} shows the AT1 and AT2 cell populations from Herriges et al. and Louie et al., both donor-derived and endogenous. In figure \ref{engineered} (a), three possible UMAP plots are shown with varying algorithmic parameters. The qualitative relations between the clusters are generally consistent, with AT1 cells clustering together apart from the AT2 cells. However, the distances between cells and the relative positions of clusters are not consistent when the UMAP parameter is varied. This illustrates how UMAP is useful for visualization and gaining qualitative intuition for a particular dataset but cannot be used to make a rigorous quantitative comparison between cells.
+
+On the other hand, figure \ref{engineered} (b) shows the scTOP scores for AT1 and AT2 for the same populations. The distances between cells will only change if the reference basis is changed, and even then will not change significantly (see \ref{robustness hists} for discussion). The AT1 and AT2 populations are separated along the relevant axes, and the highly-similar cell populations are largely overlapping. Because scTOP provides many relevant dimensions to choose from instead of trying to capture high-dimensional distances in two dimensions, it is possible to directly compare different populations to the same cell type. Figure \ref{engineered} (c) shows the distributions of AT2 scores for each of the populations, providing a clear quantitative way to compare the various engineered cells. As expected, the endogenous populations from both data sources are similar in distribution. The means and overall distributions of the AT2-derived (Louie et al.) cells are higher than those for the PSC-derived (Herriges et al.) cells, suggesting that the primary cell transplantation better emulates the endogenous AT2 cells.
+
+Supplementary figure \ref{barplot} provides a comparison between cell populations using aggregate scTOP scores. Similar to figure \ref{engineered} (c), figure \ref{barplot} provides a quantitative comparison between the populations. This figure confirms that while both AT2-derived and PSC-derived transplants generate cells that have high AT2 scores, the AT2-derived cells are quantitatively more similar to the reference AT2 profile. Altogether this analysis demonstrates how scTOP can be used to compare two distinct cell populations against a primary control. scTOP satisfies the need for quantitative assessment of transplantation protocols and can be used in combination with functional tests to identify protocols that most effectively replace endogenous cell lineages. 
+
+\section{Discussion}
+
+In this paper, we have introduced a new physics-inspired method, scTOP, for analyzing scRNA-seq data. scTOP projection scores provide clear and meaningful axes to visualize differentiation and classify cells. Since scTOP requires no statistical fitting, clustering, or dimensional reduction techniques, plots can be made quickly and easily, even for an individual cell. The input to scTOP is a reference basis of cell fates of interest, allowing us to take advantage of the wealth of new scRNA-seq expression atlases now being generated. Importantly, scTOP scores are robust to the choice of basis and reproducible across experiments, labs, and datasets, allowing integration of disparate data sources.
+
+scTOP is especially suited for tasks where the cell types of interests are well characterized. For example, we have found in our own work that scTOP is a sensitive measure for assessing the fidelity of engineered cells from directed differentiation protocols and reprogramming \citep{herriges_durable_2022}. Since scTOP does not require data harmonization, joint embeddings, or make use of cellular neighborhood information,  scTOP is able to distinguish between technical noise and biologically meaningful differences. scTOP also can be used to classify cells with minimal computational costs and thus represents a potentially simple, scalable, and reproducible way of dealing with the proliferation of scRNA-seq datasets. Since scTOP yields an alternative coordinate system for representing developmental dynamics in cell-fate space, scTOP-based visualizations are a powerful way of thinking about complex developmental processes.
+
+As an illustration, we analyzed the development of the lung epithelial AT1 and AT2 cell fates \citep{zepp2021genomic} and developmental dynamics during hematopoiesis  \citep{weinreb_lineage_2020}. Using scTOP, we showed that it was easy to identify a transient hybrid AT2/AT1 population 3 to 5 days post-birth whose gene expression profile is distinct from previously investigated transient AT2-to-AT1 states. By plotting scTOP scores as a function of time for AT1 and AT2, hybrid AT2/AT1 cells were easily identified since they formed a distinct cluster that was well separated from mature AT1 and AT2 cells. This example illustrates how given an accurate reference basis, scTOP is able to pick up on small but biologically meaningful differences in global gene expression profiles.
+
+In the context of hematopoietic development, where HSCs give rise to multiple downstream cell fates, we took advantage of the fact that scTOP maps each cell to a seven-dimensional coordinate (each direction in the coordinate systems corresponds to one of the seven cell types in the reference basis: undifferentiated progenitors, neutrophils, monocytes, megakaryocytes, mast cells, eosinophils, and basophils) to generate multiple two-dimensional visualizations using scTOP. We found that a single clonal family can often give rise to up to three different mature cell fates. Our visualizations also suggest that developmental decisions between different cell fates can be classified into two broad categories: mutually exclusive and graded. For cell fates such as megakaryocytes and monocytes, cells never have significant projection scores on both lineages simultaneously, suggesting that the underlying developmental decisions are mutually exclusive. In contrast, for other pairs of cell fates, such as monocytes and neutrophils, cells often exhibit significant projections on both members of the pair suggesting these developmental switches function in a more graded manner. It will be interesting to see if this general distinction is also present in other developmental systems or is specific to hematopoiesis.
+
+In the analysis here, we have limited ourselves to considering scRNA-seq data. However, in principle, our approach can be easily extended to include other data modalities, such as chromatic accessibility and histone modifications. Recently, several interesting works such as Dynamo have used RNA-velocity to directly learn cellular dynamics \citep{xing2022reconstructing, qiu2022mapping}. It will be interesting to see if these methods can be combined with scTOP to learn vector flows directly in cell-type space. Similarly, methods based on optimal transport, such as Waddington-OT \citep{schiebinger2019optimal}, or developmental directory reconstruction based on graph embedding, such as Monocle \citep{qiu2017reversed}, can also be performed in the cellular identity space instead of gene expression space. These represent promising directions for future research since the scTOP cell identity coordinates are often better suited for analyzing developmental dynamics than gene expression coordinates.
+
+We have found that scTOP can be used to quantitatively assess the fidelity of cultured cells, as in the case of donor-derived lung alveolar cells. However, we currently have no systematic manner within the scTOP framework for providing guidance on adjusting gene expression or designing differentiation protocols to steer cells toward desired fates. Developing such methods would provide powerful new computational tools for engineering cells via directed differentiation.
+
+We are also interested in extending scTOP to better understand the signaling pathways and genetic signatures underlying developmental dynamics. While scTOP provides a way to translate between gene expression space and cell type space, there is currently no direct interface with the biologically-essential signaling space. Further work in uniting the three relevant spaces, combined with studying the possible bifurcations in these spaces, may provide insight into the complex process of differentiation.
+
+\section{Materials and methods}
+
+\subsection{Mathematical Details}
+To calculate cell type similarity scores, scTOP uses a linear algebra projection method inspired by the concept of cell types as attractors in a dynamical system \citep{huang_cell_2005}. This projection method has been applied previously to bulk RNA-seq samples, and we will summarize the theoretical background here \citep{lang_epigenetic_2014}. A cell type is a state of the gene regulatory network. A natural way to represent attractors in this system is with an attractor neural network, where attractors correspond to different cell types. If we represent each gene as a node in a network with an associated value measuring gene expression (positive value representing high gene expression, negative value indicating low gene expression), then a cell type may be denoted by a vector of gene expression values $S_i$, where $i=1,\ldots, G$ spans the $G$ genes being measured. The gene expression profiles
+corresponding to the $C$ cell type attractors are also $G$ dimensional vectors $\xi_i^\mu$, where $\mu=1,\ldots, C$ spans the $C$ cell types being stored in the network. In what follows, we assume that $G > C$; in other words, the number of genes being measured is greater than the number of cell types.
+
+Cell types are often highly similar in their patterns of gene regulation. \cite{kanter_associative_1987} defined a pattern storage method for spin-glass-like neural networks where even correlated patterns robustly act as attractors. For the same system, they also defined order parameters: generalized magnetizations $a^{\mu}$, where $\mu$ iterates through each of the stored cell type attractors. The $a^\mu$ can be understood as de-correlated versions of the conventional spin glass magnetization order parameter that measures the similarity between a given network state and the network state $\xi^\mu$. We refer to $\xi$ as the reference basis.
+Explicitly, the $C$ generalized magnetizations $a^\mu$ can be calculated for a gene expression state $S_i$ via the expression
+\be \label{op_eqn}
+a^\mu= \sum_{\nu=1}^C\sum_{j=1}^G [A_{\mu \nu}]^{-1}\xi_j^\nu S_j.
+\ee
+where
+\be
+A_{\mu \nu}= \sum_{j}^G  \xi_j^\mu \xi_j^\nu,
+\ee
+is the overlap matrix of gene expression profiles of different cell types. Previous works have shown the order parameters $a^{\mu}$ provided an excellent similarity score for analyzing bulk RNA-seq data \citep{lang_epigenetic_2014,pusuluri_cellular_2017, dame_thyroid_2017,ikonomou_vivo_2020}. However, bulk RNA-seq measurements average gene expression over many cells, rendering it impossible to measure cell fate transitions beyond an average tissue state. 
+
+scTOP uses the same order parameters, $a^{\mu}$, to track cell type at the resolution of individual cells, making it possible to directly observe cells in different stages of differentiation. In both attractor neural networks and previous applications to bulk RNA-seq data, the expression vectors $S_i$ were binary variables. However, we have found that for working with scRNA-seq data, it is helpful to treat $S_i$ as continuous. 
+
+
+\subsection{Preprocessing}
+
+As shown in figure \ref{FIG:1} (a), the first stage of the algorithm is preprocessing and normalization of the input data. In our algorithm, measurements from each cell are normalized independently and do not depend on the expression profiles of any other cells in the dataset. We assume that the scRNA-seq data has been processed, resulting in a gene-wise count matrix: for each cell, each gene has an integer value that counts the number of assigned RNA reads. Genes are then rank-ordered. The rank order is subsequently converted to a z-score representing the percentile rank of the expression of a gene within the cell relative to all other genes being measured (assuming a normal distribution with mean zero and standard deviation one, for the sake of simplicity). For example, a gene that has higher expression than $97.8\%$ of genes being measured is assigned a score of $z=2$, while a gene that has higher expression than half of the genes is assigned a score of $z=0$. The details of the process and its effects on data distributions are described in Supplementary Information section \ref{preprocessing}. The preprocessing step is a key component of the algorithm. By processing each cell independently, the output for one cell is independent of other cells included in the analysis. This is in contrast with other algorithms which normalize gene expression across cells by, for example, selecting the most variable genes.
+
+
+\subsection{Construction of reference basis}
+
+Constructing a representative, accurate reference basis for the data being analyzed is vital to the scTOP algorithm. This process is shown in figure \ref{FIG:1} (b). First, relevant single-cell RNA-seq atlases are gathered to be processed. For example, in analyzing mouse lung cells, we used the Mouse Cell Atlas \citep{han2018mapping}, which contains single-cell samples of mouse tissues across all major organs. Once the relevant atlases are identified, we take an average across each cell population that corresponds to a distinct cell type. To mitigate the potent effects of noise and avoid training data imbalances, a sufficient number of cells must be included in each population. We have empirically found that the minimum sample size to achieve reasonable results is 100-200 cells. Noise affects the algorithm most strongly when it appears in the basis since the decorrelation operation involved in the projection separates cells according to the canonical expression levels included in the reference basis. After each cell population is averaged to create the gene expression profiles for the desired cell types, each cell type profile is preprocessed separately using the same procedure as that used for processing single cells: normalization followed by z-scoring. This creates a modular reference basis where cell types can easily be replaced, removed, or added at will. 
+
+
+
+\subsection{Calculation of scTOP scores}
+
+Given a reference basis, we can calculate the order parameters $a^\mu$ using Eq.~\ref{op_eqn}. Although these order parameters were originally inspired by attractor neural networks and spin glass physics, the $a^{\mu}$ can also be understood as non-orthogonal projections onto the subspace spanned by the reference basis (i.e., cell type space). This is illustrated in figure \ref{FIG:1} (c). A single-cell RNA-seq measurement of a sample can be thought of as a vector in $G$-dimensional gene expression space, where $G$ is the number of genes. The $C$-cell types in the reference basis are also each represented by a $G$-dimensional vector and form a non-orthogonal basis for the $C$-dimensional cell type space (we assume $C < G$). To find the coordinates $a^\mu$ in cell type space, we project the sample vector onto the reference basis using Eq.~\ref{op_eqn}.
+
+Mathematically, we can write the sample vector as a sum of the projected components and a component $S^{\perp}_i$  perpendicular to the cell type subspace: 
+\be
+S_i = \sum_\mu a^{\mu} \xi^{\mu}_i + S^{\perp}_i.
+\ee
+Biologically, $S^{\perp}$ contains information about processes that affect gene expression but are not associated with cell identity, such as the cell cycle. We refer to the $a^{\mu}$ as the scTOP scores. Each component of this vector measures the projection of the cell with gene expression profile $S_i$ onto the $\mu$ - the cell type in the reference basis. These scores can be used to accurately classify cell identity and provide a natural visualization of gene expression in the space of possible cell fates (see figure \ref{FIG:1} (e)). Gene regulatory dynamics that are unrelated to transitions between cell types in the reference basis would not be captured by $a^{\mu}$; instead, these would contribute to $S^{\perp}$. As a result, these fate-unrelated dynamics cannot be visualized using scTOP.
+
+In general, we are interested in calculating scTOP scores for individual cells. However, it is also sometimes useful to compute ``aggregate'' scTOP scores for cellular populations by averaging the mRNA counts \textit{first}, then preprocessing the data. This produces a gene expression profile and a set of scTOP aggregate scores for each population. Aggregate scores tend to be higher because averaging over the RNA counts mitigates the well-documented effects of scRNA-seq noise \citep{hicks2018missing, lahnemann_eleven_2020}; the averaged gene expression profile for the populations are not as sparse as individual profiles and thus are more similar to the averaged profiles that form the reference basis.
+
+ In the Supplementary Information, we give a detailed discussion of scTOP, including the effects of basis choice, score distributions for correct and incorrect cell types, and other technical details.
+
+
+\subsection{Assumptions and computational complexity}
+
+scTOP does not require tuning of hyper-parameters or statistical fitting procedures. The assumptions of the algorithm are explicit: that the gene expression profiles included in the reference basis are truly representative of the relevant cell types and that the reference cell types correspond to distinct cellular populations. We have found that constructing a reference basis for a cell type typically requires at least 100 cells. Additionally, if the cell types are not sufficiently different from one another, as in early embryonic development or certain stromal cells where the same cell type is compared between organs, the resulting scTOP scores may be unreliable and exhibit extreme sensitivity to small changes in the choice of reference basis. More information on the limitations of scTOP may be found in the Supplementary Information. Generally, outside these very limited edge cases, we have found that scTOP can reliably distinguish even extremely closely related cells (as shown in the example of pulmonary alveolar epithelial type 1 (AT1) and type 2 (AT2) cell lineages below).
+
+Finally, we note that scTOP is extremely computationally efficient. The core of the scTOP is equation \ref{op_eqn}. This requires a single matrix inversion involving the reference basis that can be precomputed. For this reason, the computational complexity of scTOP scales \emph{linearly} with the number of cells. The end result is that scTOP takes milliseconds to run, even for very large datasets. 
+
+\vfill\eject
+
+%%%%%%%%%%% Please use the respective coding for Back matter section %%%%%%%%
+
+\ack{We acknowledge useful discussions with Jason Rocks, Robert Marsland, and Alex Lang. We would like to thank the Mehta group and Kotton lab for their comments on the manuscript. The work was funded by a grant to the Boston University Kilachand Multicellular Design Program (to DK and PM) and NIH NIGMS 1R35GM119461 to PM. We also acknowledge programming support from Alena Yampolskaya and Sumner Hearth.}
+
+\competing{Insert the Competing interests text here.}
+
+\data{scTOP is available as a package on the Python Package Index (https://pypi.org/project/scTOP/) and the code is accessible via Github (https://github.com/Emergent-Behaviors-in-Biology/scTOP). The scripts with the analyses for this paper are also available on Github (https://github.com/Emergent-Behaviors-in-Biology/scTOP-manuscript). The scRNA-seq data analyzed can be downloaded from a range of sources. The endogenous and transplanted mouse lung data from the Kotton lab is available on NCBI's Gene Expression Omnibus under accession codes GSE200886, GSE200883, GSE200884, and GSE200885, as well as the Kotton Lab's Bioinformatics Portal (http://www.kottonlab.com) \citep{herriges_durable_2022}. The Mouse Cell Atlas data is available on FigShare (https://figshare.com/articles/dataset/MCA\_DGE\_Data/5435866) \citep{han2018mapping}. The mouse brain atlas 10x data is available on the Neuroscience Multi-omic Data Archive (https://assets.nemoarchive.org/dat-jb2f34y) \citep{yao_taxonomy_2021}. The CellBench data is available under accession GSE118767 and on Github (https://github.com/LuyiTian/sc\_mixology/blob/master/data/) \citep{tian_benchmarking_2019}. The human lung atlas data is available on Synapse (https://www.synapse.org/\#!Synapse:syn21041850) as well as the European Genome-phenome Archive under accession EGAS00001004344 \citep{travaglini_molecular_2020}. Tabula Muris data is available through FigShare (https://figshare.com/projects/Tabula\_Muris\_Transcriptomic\_characterization\_of\_20\_organs\_and\_tissues\_from\_Mus\_musculus\_at\_single\_cell\_resolution/27733) and accession GSE109774 \citep{schaum_single-cell_2018}. The developing mouse lung data is available under accession GSE149563 \citep{zepp2021genomic}. The hematopoietic lineage tracing data is available under accession GSE140802, and the metadata can be found on Github (https://github.com/AllonKleinLab/paper-data/tree/master/Lineage\_tracing\_on\_transcriptional\_landscapes\_links\_state\_to\_fate\_during\_differentiation) \citep{weinreb_lineage_2020}. The endogenous and engineered mouse lung data from the Kim lab is available under accession GSE190565 \citep{louie_progenitor_2022}. The human pancreatic data used for the batch effects figure in the SI was downloaded from Docker (https://hub.docker.com/repository/docker/jinmiaochenlab/batch-effect-removal-benchmarking) \citep{tran2020benchmark}, and it's available under accessions GSE85241 \citep{baron2016single}, E-MTAB-5061 \citep{muraro2016single}, GSE84133 
+\citep{segerstolpe2016single}, GSE83139 \citep{wang2016single}, and GSE81608 \citep{xin2016rna}.}
+
+
+%%%%%%%%% References %%%%%%%%%%%%%%%%%
+\newcommand{\newblock}{}
+\bibliography{export-data.bib}
+
+\begin{figure}[h!]
+	\centering
+	\caption{\textbf{Steps involved in the scTOP algorithm.} (a) Each cell in the query data is preprocessed independently of the other cells in the dataset. (b) scRNA-seq atlases, such as the Mouse Cell Atlas, are used to define the reference basis in the algorithm. (c) scTOP scores are the projections of query data onto the non-orthogonal subspace of cell types. Since there is no statistical fitting, no tuning parameters are involved. (d) The process of finding scTOP scores is shown in the grey section, and the blue section illustrates cell-type space. This space has as many dimensions as there are cell types in the reference basis. We can visualize this concept in 1, 2, or 3 dimensions, depending on which cell types are most relevant. In the 3-dimensional case, the shadows on the bounds of the scatter plot are included to better illustrate the position of points in 3-dimensional space.}
+	\label{FIG:1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\caption{\textbf{scTOP identifies mouse lung cell types.} Using the Mouse Cell Atlas as the reference basis, we show that mouse lung types separate clearly on the scTOP score axes. The data points correspond to individual cells, and in the first row of plots, the marker shape and color indicate the true cell type as determined by annotations from Herriges et al. The axes used are scTOP scores for similarity with lung ciliated cells and alveolar types 1 and 2. The second, third, and fourth rows of plots have individual cells colored by the marker genes for the type indicated by the color bars at the end of each row (see Supplementary Information \ref{alveolar markers} for details on marker genes used).}
+	\label{herriges}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\caption{\textbf{scTOP identifies mouse brain cell types.} (a) Heatmap showing the average scTOP score for individual cells of the type indicated on the y-axis, compared to the reference types on the x-axis. A subset of cells from the Mouse Brain Atlas is used as the reference basis to query other cells from the same data set. The diagonal indicates that scTOP accurately matches query cells to the true reference type. (b) Histograms showing the distribution of scTOP scores for individual cells of the type labeling the x-axis. The scores shown are of the same type as the sample data. The far left histogram shows the distribution of Astro scores for Astro cells, and the average of this distribution is indicated by the color of the upper left corner box in the heatmap shown in (a).}
+	\label{mouse_brain}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\caption{\textbf{scTOP correctly classifies tissues across biological contexts.} The shade of each bin indicates the average scTOP score for individually-queried cells projected on the reference cell type indicated on the x-axis. The y-axis lists the true types of the queried cells. The dark diagonals demonstrate that scTOP scores correctly match the queried data to the corresponding true types.  (a) Aggregate pseudo-bulk samples from the Mouse Cell Atlas are compared to a reference basis consisting of organs from Tabula Muris. The scTOP scores are significantly higher when comparing a cell type with the organ of origin. (b) The CellBench data set contains human cell cancer lines specifically processed to benchmark scRNA-seq algorithms. We take a subset of cells to use as the reference basis in analyzing the rest of the CellBench data. (c) Cells from the Human Lung Atlas are compared to a reference basis constructed from cells from the Human Lung Atlas. }
+	\label{heatmaps}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\caption{\textbf{Visualizing the developing mouse lung with scTOP. scTOP illustrates the specification of alveolar type I and type II cells in murine embryonic development.} Alveolar cells from Zepp et al. are compared to a reference basis constructed from adult lung cells from Herriges et al. and early epithelial cells from the Atlas of Lung Development. Each subplot corresponds to the age of the mouse from which the sample was extracted, from post-conception day 12.5 (E12.5) to 42 days post-birth (P42). Each cell is colored by the average of that cell's expression of (b) AT1 marker genes and (c) AT2 marker genes. The scTOP scores of AT1 (AT2) cells are high when the average AT1 (AT2) marker gene expression is high.}
+	\label{LungMAP}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\caption{\textbf{Visualizing hematopoietic lineage tracing with scTOP.} (a), (b), (c) display scatter plots and distributions of scTOP scores for individual in vitro clone families from  \cite{weinreb_lineage_2020}. The scatter plots show the x-axis scTOP score compared to the y-axis scTOP score for individual cells, while the distributions show the scTOP scores of the type indicated on the x-axis of the corresponding column. The color and shape of each marker (and the color of each distribution) indicate the days in culture on which the cells were extracted. (a) A clone family where all of the cells end up becoming neutrophils. (b) A clone family where some clones end up becoming neutrophils and some become monocytes. At day 2, the 3 sister cells have low neutrophil and monocyte scores and high progenitor scores. At days 4 and 6, the progenitor scores decrease, and a portion of the cells increase in monocyte scores while others increase in neutrophil scores. (c) A clone family where the descendant cells become neutrophils, eosinophils, and basophils.}
+	\label{hem clones}
+\end{figure}
+
+
+\begin{figure}[h!]
+	\centering
+	\caption{\textbf{Tracing differentiation of hematopoietic cells from progenitor to mature type.} The plots shown here are 2D histograms of all of the in vitro clone families from Weinreb et al., with the x-axis of each one indicating the scTOP score for hematopoietic progenitor type and the y-axis showing the score for a mature type. Each bin of the histogram is colored by the average day in culture of the data points that fall within the bin. Early cells have high progenitor scores and low mature-type scores. As time passes, cells end up with high scores in mature types.}
+	\label{hem progenitor}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\caption{\textbf{Comparing differentiation of hematopoietic cells between mature types.} As in figure \ref{hem progenitor}, the plots shown here are 2D histograms of all of the in vitro clone families from Weinreb et al. The x-axis and y-axis of each histogram indicate the scTOP score of the labeled mature type. Each bin of the histogram is colored by the average day in culture of the data points that fall within the bin. Some pairs of types have cells with high scores of both types. This is apparent in the neutrophil-monocyte histogram, which presents a continuous spectrum of scores from the horizontal axis to the vertical. Other pairs of types only have cells expressing one type or the other, as in the L-shaped neutrophil-megakaryocyte histogram.}
+	\label{hem mature}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\caption{\textbf{Comparing donor-derived and endogenous alveolar cells from Herriges et al. and Louie et al.} The cell type annotations come from a separate Louvain clustering and are the same for all plots in this figure. (a) UMAP visualizations of the data, colored by cell type annotations. The three have different values for the UMAP parameter n\_neighbors, which changes whether the embedding preserves more local or global structure. (b) scTOP plot showing the AT1 score on the x-axis and the AT2 score on the y-axis. (c) Box-and-whisker plot showing the distributions of scTOP AT2 scores for the various cell populations. Supplementary figure \ref{barplot} shows the scores for other types are consistently low.}
+	\label{engineered}
+\end{figure}
+
+\end{document}
